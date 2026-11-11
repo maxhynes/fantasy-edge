@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fantasy Edge</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14171c;--mute:#5d6673;--line:#e3e6ea;--acc:#2f6fed;--acc-ink:#fff;
+--good:#1f8a4c;--bad:#c2362f;--warn:#b7791f;--chip:#eef1f5;--mine:#eaf1ff}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1216;--card:#171b21;--ink:#e8ebef;--mute:#98a2ae;--line:#2a3039;
+--acc:#5b8dff;--acc-ink:#0b0d10;--good:#3cc47a;--bad:#ff6b61;--warn:#e0a640;--chip:#222831;--mine:#1b2638}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:20px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+h1{font-size:17px;margin:0;letter-spacing:-.2px}h1 b{color:var(--acc)}
+nav{display:flex;gap:4px;flex-wrap:wrap}nav button{background:none;border:0;color:var(--mute);padding:7px 12px;border-radius:7px;font:inherit;cursor:pointer}
+nav button.on{background:var(--chip);color:var(--ink);font-weight:600}
+main{max-width:1280px;margin:0 auto;padding:20px 16px 60px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card h2{font-size:14px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card h2 small{font-weight:400;color:var(--mute)}
+.wide{grid-column:1/-1}
+.mute{color:var(--mute)}.good{color:var(--good)}.bad{color:var(--bad)}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+.btn{font:inherit;padding:8px 14px;border-radius:8px;border:0;background:var(--acc);color:var(--acc-ink);cursor:pointer;font-weight:600}
+.btn.ghost{background:var(--chip);color:var(--ink)}.btn:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.scroll{overflow-x:auto}
+.tbl th{text-align:left;font-weight:600;color:var(--mute);font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl tr.mine td{background:var(--mine)}.tbl tr.click{cursor:pointer}.tbl tr.click:hover td{background:var(--chip)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.g{display:inline-block;min-width:30px;text-align:center;padding:2px 6px;border-radius:6px;font-weight:700;font-size:12px}
+.gA{background:#1f8a4c22;color:var(--good)}.gB{background:#2f6fed1f;color:var(--acc)}.gC{background:#b7791f22;color:var(--warn)}.gD,.gF{background:#c2362f22;color:var(--bad)}
+.chip{display:inline-block;background:var(--chip);border-radius:20px;padding:2px 9px;font-size:12px;margin:2px 4px 2px 0}
+.bar{height:8px;border-radius:5px;background:var(--chip);overflow:hidden;flex:1;min-width:60px}.bar i{display:block;height:100%;background:var(--acc)}
+.wp{display:flex;align-items:center;gap:10px;margin:8px 0}.wp .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wp .t:last-child{text-align:right}.wp .bar{flex:0 0 38%}
+.list{margin:0;padding:0;list-style:none}.list li{padding:8px 0;border-bottom:1px solid var(--line)}.list li:last-child{border:0}
+.big{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+.err{background:#c2362f18;color:var(--bad);padding:10px 12px;border-radius:8px;margin:10px 0}
+.note{background:var(--chip);padding:10px 12px;border-radius:8px;font-size:13px;color:var(--mute)}
+.steps li{margin:8px 0}code{background:var(--chip);padding:1px 5px;border-radius:4px;font-size:12.5px}
+.loading{padding:40px;text-align:center;color:var(--mute)}
+.heat{display:inline-block;width:44px;text-align:center;border-radius:4px;padding:2px 0;font-size:12px;font-variant-numeric:tabular-nums}
+
+:root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100}
+@media (prefers-color-scheme:dark){:root{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500}}
+section{margin:0 0 28px}
+.grid.g2{grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr))}
+h3.sec{font-size:18px;margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;letter-spacing:-.2px}
+h3.sec .btn{margin-left:auto}.btn.sm{padding:5px 10px;font-size:12.5px;font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .big{margin:2px 0}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}.chart .ax{fill:var(--mute);font-size:11px}
+.chart .cross{stroke:var(--mute);stroke-width:1;stroke-dasharray:3 3}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;max-width:260px}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.hb{display:flex;flex-direction:column;gap:5px}
+.hbr{display:grid;grid-template-columns:minmax(0,130px) 1fr 40px;align-items:center;gap:8px;font-size:12.5px;padding:1px 4px;border-radius:6px}
+.hbr .hl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hbr .hv{text-align:right}
+.hbr .ht{height:12px;background:var(--chip);border-radius:4px;overflow:hidden}
+.hbr .ht i{display:block;height:100%;background:var(--mute);opacity:.45;border-radius:0 4px 4px 0}
+.hbr.me{background:var(--mine);font-weight:700}.hbr.me .ht i{background:var(--s1);opacity:1}
+.hbr:hover{background:var(--chip)}
+.mrow{padding:10px 0;border-bottom:1px solid var(--line)}.mrow:last-child{border:0}
+.wbar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin:6px 0 2px}
+.wbar .wme{background:var(--s1)}.wbar .wop{background:var(--chip)}
+@media (max-width:600px){.grid{grid-template-columns:1fr}header{padding:12px 16px}}
+</style>
+</head>
+<body>
+<header><h1>Fantasy <b>Edge</b></h1>
+<nav id="nav"><button data-v="home">🏠 Home</button><button data-v="nfl">🏈 Football</button><button data-v="nhl">🏒 Hockey</button><button data-v="fb">🔁 Feedback</button><button data-v="connect">🔌 Connect</button></nav>
+<span id="hdr" class="mute" style="margin-left:auto;font-size:12px"></span><button class="btn ghost sm" id="hrefresh" onclick="view==='home'?home(true):view==='nfl'||view==='nhl'?sport(view,true):go(view)">↻</button></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s), app=$('#app');
+let ST={}, view=null, cache={}, fbSport='nfl', nflLg=null;
+try{nflLg=localStorage.getItem('fe_nfl')}catch(e){}
+const nflList=()=>ST.sleeper_leagues||[];
+function curNfl(){const ls=nflList();if(!ls.find(l=>l.id===nflLg))nflLg=ls[0]?.id||null;return nflLg}
+function setNfl(id){nflLg=id;try{localStorage.setItem('fe_nfl',id)}catch(e){}}
+const lgSelect=(id,cur)=>nflList().length>1?`<select id="${id}">${nflList().map(l=>`<option value="${esc(l.id)}" ${l.id===cur?'selected':''}>${esc(l.name)}</option>`).join('')}</select>`:'';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,body){const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||r.statusText);return j}
+const G=g=>g?`<span class="g g${g[0]}">${g}</span>`:'<span class="mute">–</span>';
+const f=(x,d=1)=>x==null?'<span class="mute">–</span>':Number(x).toFixed(d);
+const pct=x=>x==null?'–':Math.round(x*100)+'%';
+const SRC={proj:'Sleeper proj',season:'Season avg',recent:'Recent form',market:'Market value'};
+const SRC_NHL={season:'Season pace',recent:'Last 14 days',market:'Yahoo % rostered'};
+const srcName=(sp,s)=>(sp==='nhl'?SRC_NHL:SRC)[s]||s;
+
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+function go(v){view=v;try{localStorage.setItem('fe_view',v)}catch(e){}
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  hideTip();({home:()=>home(),nfl:()=>sport('nfl'),nhl:()=>sport('nhl'),fb:feedback,connect})[v]()}
+
+async function init(){ST=await api('/api/status');let v=null;try{v=localStorage.getItem('fe_view')}catch(e){}
+  if(!nflList().length&&!ST.yahoo_league)v='connect';go(v||'home')}
+
+/* ------------------------------------------------------------------ home */
+const SER=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+let tip;function showTip(e,html){if(!tip){tip=document.createElement('div');tip.className='tip';document.body.appendChild(tip)}
+  tip.innerHTML=html;tip.style.display='block';const r=tip.getBoundingClientRect();
+  let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;
+  tip.style.left=x+'px';tip.style.top=y+'px'}
+function hideTip(){if(tip)tip.style.display='none'}
+const legend=items=>`<div class="legend">${items.map(i=>`<span><i style="background:${i.c};${i.dash?'height:0;border-top:2px dashed '+i.c+';background:none':''}"></i>${esc(i.n)}</span>`).join('')}</div>`;
+
+/* line chart: series=[{name,color,dash,values:[{x,y}]}], one y-axis */
+function lineChart(id,series,o={}){
+  const W=560,H=o.h||220,P={l:40,r:o.r??14,t:12,b:26};
+  const xs=[...new Set(series.flatMap(s=>s.values.map(v=>v.x)))].sort((a,b)=>a-b);
+  const ys=series.flatMap(s=>s.values.map(v=>v.y)).filter(v=>v!=null);
+  if(!xs.length||!ys.length)return`<p class="mute">Not enough finished weeks yet.</p>`;
+  let lo=o.min??Math.min(...ys),hi=o.max??Math.max(...ys);const pad=(hi-lo)*0.08||1;if(o.min==null)lo-=pad;if(o.max==null)hi+=pad;
+  const X=x=>P.l+(xs.length<2?0.5:(xs.indexOf(x)/(xs.length-1)))*(W-P.l-P.r),Y=y=>P.t+(1-(y-lo)/(hi-lo))*(H-P.t-P.b);
+  const ticks=[0,1,2,3].map(i=>lo+(hi-lo)*i/3);
+  let g=ticks.map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(t)}" y2="${Y(t)}" class="grid"/><text x="${P.l-6}" y="${Y(t)+4}" class="ax" text-anchor="end">${o.tf?o.tf(t):Math.round(t)}</text>`).join('');
+  g+=xs.map(x=>`<text x="${X(x)}" y="${H-8}" class="ax" text-anchor="middle">${o.xl?o.xl(x):x}</text>`).join('');
+  for(const s of series){const pts=s.values.filter(v=>v.y!=null);
+    g+=`<path d="${pts.map((v,i)=>(i?'L':'M')+X(v.x).toFixed(1)+','+Y(v.y).toFixed(1)).join('')}" fill="none" stroke="${s.color}" stroke-width="2" ${s.dash?'stroke-dasharray="5 4"':''} stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(!s.dash)g+=pts.map(v=>`<circle cx="${X(v.x)}" cy="${Y(v.y)}" r="3.5" fill="${s.color}" stroke="var(--card)" stroke-width="2"/>`).join('')}
+  g+=`<line id="${id}-x" y1="${P.t}" y2="${H-P.b}" class="cross" style="display:none"/><rect x="${P.l}" y="0" width="${W-P.l-P.r}" height="${H}" fill="transparent" id="${id}-hit"/>`;
+  setTimeout(()=>{const hit=document.getElementById(id+'-hit'),cx=document.getElementById(id+'-x');if(!hit)return;const svg=hit.ownerSVGElement;
+    hit.onmousemove=e=>{const b=svg.getBoundingClientRect(),mx=(e.clientX-b.left)*W/b.width;let best=xs[0];xs.forEach(x=>{if(Math.abs(X(x)-mx)<Math.abs(X(best)-mx))best=x});
+      cx.setAttribute('x1',X(best));cx.setAttribute('x2',X(best));cx.style.display='';
+      showTip(e,`<b>${o.xl?o.xl(best):'Week '+best}</b>`+series.map(s=>{const v=s.values.find(v=>v.x===best);return v&&v.y!=null?`<div><i style="background:${s.color}"></i>${esc(s.name)} <b>${o.fmt?o.fmt(v.y):v.y}</b></div>`:''}).join(''))};
+    hit.onmouseleave=()=>{cx.style.display='none';hideTip()}},0);
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(o.label||'chart')}">${g}</svg>${series.length>1?legend(series.map(s=>({n:s.name,c:s.color,dash:s.dash}))):''}`}
+
+/* horizontal bars: items=[{label,value,mine,note}] */
+function hbars(id,items,o={}){
+  const max=Math.max(...items.map(i=>i.value),1),min=o.zero?0:Math.min(...items.map(i=>i.value))*0.85;
+  return `<div class="hb">${items.map((it,i)=>`<div class="hbr ${it.mine?'me':''}" data-tip="${esc(it.tip||'')}"><span class="hl">${esc(it.label)}</span>
+    <span class="ht"><i style="width:${Math.max(2,(it.value-min)/(max-min)*100)}%"></i></span><span class="hv">${it.note||''}</span></div>`).join('')}</div>`}
+
+function wireBars(){app.querySelectorAll('.hbr[data-tip]').forEach(r=>{if(!r.dataset.tip)return;r.onmousemove=e=>showTip(e,r.dataset.tip);r.onmouseleave=hideTip})}
+
+/* vertical bars (single series) */
+function vbars(id,items,o={}){
+  if(!items.length)return`<p class="mute">Not enough finished weeks yet.</p>`;
+  const W=560,H=o.h||150,P={l:34,r:8,t:10,b:24},max=Math.max(...items.map(i=>i.v),1);
+  const bw=(W-P.l-P.r)/items.length,Y=v=>P.t+(1-v/max)*(H-P.t-P.b);
+  let g=[0,max/2,max].map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(t)}" y2="${Y(t)}" class="grid"/><text x="${P.l-6}" y="${Y(t)+4}" class="ax" text-anchor="end">${Math.round(t)}</text>`).join('');
+  items.forEach((it,i)=>{const x=P.l+i*bw+bw*0.2,w=bw*0.6,y=Y(it.v),h=H-P.b-y,r=Math.min(4,w/2,h);
+    g+=`<path d="M${x},${H-P.b}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${H-P.b}Z" fill="${o.color||'var(--s1)'}"/>
+      <rect x="${P.l+i*bw}" y="${P.t}" width="${bw}" height="${H-P.t-P.b}" fill="transparent" class="vb" data-tip="${esc(it.tip)}"/>
+      <text x="${x+w/2}" y="${H-8}" class="ax" text-anchor="middle">${esc(it.x)}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(o.label||'bar chart')}">${g}</svg>`}
+
+function winBar(m){const w=m.win;return `<div class="wbar"><span style="width:${w*100}%" class="wme"></span><span style="width:${(1-w)*100}%" class="wop"></span></div>`}
+
+async function home(force){
+  $('#hdr').textContent='All leagues';
+  if(!force&&cache.home)return renderHome(cache.home);
+  app.innerHTML=`<div class="loading">Loading every league…</div>`;
+  try{cache.home=await api('/api/home'+(force?'?force=1':''))}catch(e){app.innerHTML=`<div class="err">${esc(e.message)}</div>`;return}
+  if(view==='home')renderHome(cache.home)}
+
+function renderHome(H){
+  const L=H.leagues.filter(l=>!l.error), bad=H.leagues.filter(l=>l.error);
+  if(!H.leagues.length){app.innerHTML=`<div class="card"><p>No leagues connected yet.</p><button class="btn" onclick="go('connect')">Connect</button></div>`;return}
+  let W=0,Lo=0;L.forEach(l=>{const m=(l.me?.record||'').match(/^(\d+)-(\d+)/);if(m){W+=+m[1];Lo+=+m[2]}});
+  const games=L.filter(l=>l.matchup);
+  const avgWin=games.length?games.reduce((a,l)=>a+l.matchup.win,0)/games.length:null;
+  const expWins=games.reduce((a,l)=>a+l.matchup.win,0);
+  const todo=[];L.forEach(l=>{const tag=`<span class="chip">${l.sport==='nfl'?'🏈':'🏒'} ${esc(l.name)}</span>`;
+    l.start_sit.forEach(a=>todo.push({p:3,h:`${tag} ${esc(a.text)}`}));
+    l.waivers.slice(0,1).forEach(w=>todo.push({p:2,h:`${tag} ${esc(w.text)} <span class="good">+${f(w.gain,1)}/wk</span>`}));
+    l.trades.slice(0,1).forEach(t=>todo.push({p:1,h:`${tag} Trade idea: give <b>${esc(t.give.name)}</b> for <b>${esc(t.get.name)}</b> (${esc(t.team)})`}))});
+  todo.sort((a,b)=>b.p-a.p);
+  const pfAvg=L.map(l=>{const h=l.history.filter(x=>x.me!=null);return h.length?h.reduce((a,x)=>a+x.me-x.avg,0)/h.length:0});
+  let h=`<section><h3 class="sec">Overview</h3><div class="tiles">
+    <div class="tile"><div class="mute">Combined record</div><div class="big">${W}-${Lo}</div><div class="mute">${pct(W/(W+Lo||1))} win rate · ${L.length} league${L.length>1?'s':''}</div></div>
+    <div class="tile"><div class="mute">Expected wins this week</div><div class="big">${expWins.toFixed(1)} <span class="mute" style="font-size:16px">of ${games.length}</span></div><div class="mute">avg win chance ${pct(avgWin)}</div></div>
+    <div class="tile"><div class="mute">Moves to make</div><div class="big">${todo.length}</div><div class="mute">lineup, waiver &amp; trade calls</div></div>
+    <div class="tile"><div class="mute">Scoring vs league avg</div><div class="big ${mean(pfAvg)>=0?'good':'bad'}">${mean(pfAvg)>=0?'+':''}${mean(pfAvg).toFixed(1)}</div><div class="mute">points per week, all leagues</div></div>
+  </div></section>`;
+  if(bad.length)h+=bad.map(b=>`<div class="err">${esc(b.name||b.sport)}: ${esc(b.error)}</div>`).join('');
+  if(!H.yahoo_connected)h+=`<p class="note">🏒 Hockey isn't connected yet. <a href="#" onclick="go('connect');return false">Connect Yahoo</a> and it shows up here too.</p>`;
+  // matchups + todo
+  h+=`<section><div class="grid">
+   <div class="card"><h2>This week's matchups</h2>${games.map(l=>`<div class="mrow"><div class="row" style="justify-content:space-between;margin:0"><span>${l.sport==='nfl'?'🏈':'🏒'} <b>${esc(l.name)}</b></span><span class="${l.matchup.win>=.5?'good':'bad'}"><b>${pct(l.matchup.win)}</b></span></div>
+     ${winBar(l.matchup)}<div class="row mute" style="justify-content:space-between;margin:2px 0 0;font-size:12.5px"><span>${esc(l.me.name)} · ${f(l.matchup.me_proj)}</span><span>${f(l.matchup.opp_proj)} · ${esc(l.matchup.opp)}</span></div></div>`).join('')||'<p class="mute">No matchups this week.</p>'}</div>
+   <div class="card"><h2>To-do this week <small>most important first</small></h2><ul class="list">${todo.slice(0,10).map(t=>`<li>${t.h}</li>`).join('')||'<li class="mute">Nothing to change. Your lineups are set.</li>'}</ul></div>
+  </div></section>`;
+  // per league
+  L.forEach((l,li)=>{
+    const hist=l.history, me=l.me;
+    const ranked=[...l.teams].sort((a,b)=>a.ros.rank-b.ros.rank);
+    h+=`<section><h3 class="sec">${l.sport==='nfl'?'🏈':'🏒'} ${esc(l.name)} <span class="mute">· week ${l.week}</span>
+      <button class="btn ghost sm" onclick="${l.sport==='nfl'?`setNfl('${esc(l.id)}');go('nfl')`:`go('nhl')`}">Open full league →</button></h3>
+     <div class="tiles">
+      <div class="tile"><div class="mute">Record</div><div class="big">${esc(me?.record||'–')}</div><div class="mute">${esc(me?.name||'')}</div></div>
+      <div class="tile"><div class="mute">This week</div><div class="big">${G(me?.week.grade)}</div><div class="mute">#${me?.week.rank} of ${l.teams.length}</div></div>
+      <div class="tile"><div class="mute">Rest of season</div><div class="big">${G(me?.ros.grade)}</div><div class="mute">#${me?.ros.rank} of ${l.teams.length}</div></div>
+      ${l.matchup?`<div class="tile"><div class="mute">Win chance</div><div class="big">${pct(l.matchup.win)}</div><div class="mute">vs ${esc(l.matchup.opp)}</div></div>`:''}
+     </div>
+     <div class="grid g2">
+      <div class="card"><h2>Your weekly score <small>vs league average</small></h2>${lineChart('lc'+li,[
+         {name:'You',color:'var(--s1)',values:hist.map(x=>({x:x.week,y:x.me}))},
+         {name:'League average',color:'var(--mute)',dash:1,values:hist.map(x=>({x:x.week,y:x.avg}))},
+         {name:'Your best possible lineup',color:'var(--s2)',dash:1,values:hist.map(x=>({x:x.week,y:x.optimal}))}],{xl:x=>'Wk '+x,fmt:v=>v.toFixed?v.toFixed(1):v,label:'Your weekly score vs league average'})}</div>
+      <div class="card"><h2>Power rankings <small>rest-of-season strength</small></h2>${hbars('pr'+li,ranked.map(t=>({label:t.name,value:t.ros.value,mine:t.mine,
+         note:G(t.ros.grade),tip:`<b>${esc(t.name)}</b><div>${esc(t.record||'')} · ROS #${t.ros.rank} (${t.ros.grade})</div><div>This week #${t.week.rank} (${t.week.grade})</div>`})))}</div>
+      <div class="card"><h2>Points left on your bench <small>per week</small></h2>${vbars('vb'+li,hist.filter(x=>x.me!=null).map(x=>({x:'Wk '+x.week,v:Math.max(0,x.optimal-x.me),tip:`<b>Week ${x.week}</b><div>Scored ${x.me} · best possible ${x.optimal}</div><div>Left on bench <b>${(x.optimal-x.me).toFixed(1)}</b></div>`})),{color:'var(--s2)',label:'Points left on bench per week'})}
+         <p class="mute" style="margin:6px 0 0;font-size:12.5px">Total this season: <b>${hist.reduce((a,x)=>a+Math.max(0,(x.optimal||0)-(x.me||0)),0).toFixed(1)}</b> pts</p></div>
+      <div class="card"><h2>Top moves</h2><ul class="list">
+        ${l.start_sit.map(a=>`<li>✅ ${esc(a.text)}</li>`).join('')}
+        ${l.waivers.slice(0,3).map(w=>`<li>➕ ${esc(w.text)} <span class="good">+${f(w.gain,1)}/wk</span></li>`).join('')}
+        ${l.trades.slice(0,2).map(t=>`<li>🔁 Give <b>${esc(t.give.name)}</b>, get <b>${esc(t.get.name)}</b> <span class="mute">(${esc(t.team)}) · you +${f(t.you_gain,1)}, they +${f(t.they_gain,1)}</span></li>`).join('')}
+        ${l.trending.length?`<li>🔥 Trending &amp; available: ${l.trending.map(t=>esc(t.name)).join(', ')}</li>`:''}
+        ${!l.start_sit.length&&!l.waivers.length&&!l.trades.length?'<li class="mute">Nothing to change right now.</li>':''}</ul></div>
+     </div></section>`});
+  // model health
+  const accBy={};L.forEach(l=>l.model.source_scores.forEach(s=>{const k=s.source;(accBy[k]=accBy[k]||{})[s.week]=(accBy[k][s.week]||[]).concat(s.spearman)}));
+  const srcs=Object.keys(accBy).filter(s=>s!=='market');
+  const M=L.map(l=>l.model.matchups).filter(m=>m.scored);
+  const scored=M.reduce((a,m)=>a+m.scored,0),hit=scored?M.reduce((a,m)=>a+m.hit_rate*m.scored,0)/scored:null,br=scored?M.reduce((a,m)=>a+m.brier*m.scored,0)/scored:null;
+  const adv=L.map(l=>l.model.advice).filter(a=>a.resolved);
+  h+=`<section><h3 class="sec">🔁 How the model is doing <button class="btn ghost sm" onclick="go('fb')">Full feedback →</button></h3>
+   <div class="tiles">
+    <div class="tile"><div class="mute">Picked the winner</div><div class="big">${pct(hit)}</div><div class="mute">${scored} matchups scored</div></div>
+    <div class="tile"><div class="mute">Win % accuracy (Brier)</div><div class="big ${br!=null&&br<.25?'good':''}">${br==null?'–':br.toFixed(3)}</div><div class="mute">coin flip = 0.250, lower is better</div></div>
+    <div class="tile"><div class="mute">Advice hit rate</div><div class="big">${adv.length?pct(adv.reduce((a,x)=>a+x.hit_rate*x.resolved,0)/adv.reduce((a,x)=>a+x.resolved,0)):'–'}</div><div class="mute">${adv.length?adv.reduce((a,x)=>a+x.resolved,0)+' calls graded':'graded once this week finishes'}</div></div>
+   </div>
+   <div class="card"><h2>Tracker accuracy by week <small>how well each tracker ranked players (1.0 = perfect), averaged over your football leagues</small></h2>
+    ${lineChart('acc',srcs.map((s,i)=>({name:srcName('nfl',s),color:SER[i],values:Object.entries(accBy[s]).map(([w,v])=>({x:+w,y:v.reduce((a,b)=>a+b,0)/v.length}))})),{xl:x=>'Wk '+x,fmt:v=>(+v).toFixed(2),tf:v=>v.toFixed(2),min:0,max:1,label:'Tracker accuracy by week'})}</div></section>`;
+  app.innerHTML=h;wireBars();
+  app.querySelectorAll('.vb').forEach(r=>{r.onmousemove=e=>showTip(e,r.dataset.tip);r.onmouseleave=hideTip});
+}
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+
+/* ------------------------------------------------------------- connect */
+function connect(){
+  app.innerHTML=`<div class="grid">
+  <div class="card"><h2>🏈 Sleeper (football) ${nflList().length?'<span class="chip good">connected</span>':''}</h2>
+   <p class="mute">Sleeper's API is public and read-only. Just your username — no password.</p>
+   <div class="row"><input id="su" placeholder="Sleeper username" value="${esc(ST.sleeper_username||'')}"><button class="btn" id="sgo">Find my leagues</button></div>
+   <div id="sl">${nflList().length?`<p>Using: ${nflList().map(l=>`<span class="chip">${esc(l.name)}</span>`).join('')}</p><p class="mute">Click “Find my leagues” to change.</p>`:''}</div></div>
+  <div class="card"><h2>🏒 Yahoo (hockey) ${ST.yahoo_connected?'<span class="chip good">connected</span>':''}</h2>
+   <ol class="steps">
+    <li>Create a free Yahoo app at <a href="https://developer.yahoo.com/apps/create/" target="_blank">developer.yahoo.com/apps/create</a>:
+     Application type <b>Installed Application</b>, Redirect URI <code>oob</code>, API permission <b>Fantasy Sports → Read</b>.</li>
+    <li>Paste the Client ID and Client Secret it gives you:
+     <div class="row"><input id="yid" placeholder="Client ID (Consumer Key)" style="flex:1"></div>
+     <div class="row"><input id="ysec" placeholder="Client Secret" type="password" style="flex:1"></div>
+     <div class="row"><input id="yred" placeholder="Redirect URI" value="${esc(ST.yahoo_redirect||'oob')}" style="flex:1"><button class="btn" id="ycfg">Save &amp; get login link</button></div></li>
+    <li>Log in with Yahoo and allow access. <b>Open this link in your regular browser</b> (Safari/Chrome) so this page stays open:
+     <div id="ylink">${ST.yahoo_configured?'<button class="btn ghost" id="yauth">Show Yahoo login link</button>':'<span class="mute">(after step 2)</span>'}</div></li>
+    <li>After you click Agree, Yahoo either shows a code, or sends you to a page that won't load. That's normal: copy the <b>whole address</b> from the address bar (it contains <code>code=</code>) and paste it here:
+     <div class="row"><input id="ycode" placeholder="Code" style="flex:1"><button class="btn" id="ygo">Connect</button></div></li>
+   </ol>
+   <div id="yl">${ST.yahoo_league_name?`<p>Current league: <b>${esc(ST.yahoo_league_name)}</b></p>`:''}${ST.yahoo_connected?'<button class="btn ghost" id="yreload">Change league</button>':''}</div>
+   <p class="note">Your keys and login token stay on this computer (<code>fantasy_edge/data/config.json</code>). Nothing is sent anywhere except Yahoo.</p></div></div>
+   <div id="cerr"></div>`;
+  const err=e=>$('#cerr').innerHTML=`<div class="err">${esc(e.message)}</div>`;
+  const showLink=u=>{$('#ylink').innerHTML=`<div class="row"><input id="yurl" readonly value="${esc(u)}" style="flex:1" onclick="this.select()"><button class="btn" id="ycopy">Copy link</button></div><p class="mute" style="margin:4px 0">Paste it into Safari or Chrome, log in, click Agree, then come back here for step 4.</p>`;
+    $('#ycopy').onclick=async()=>{const i=$('#yurl');i.select();try{await navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}$('#ycopy').textContent='Copied ✓'}};
+  const pick=(el,leagues,ep)=>{el.innerHTML=leagues.length?`<div class="row"><select id="${el.id}s">${leagues.map(l=>`<option value="${esc(l.id)}">${esc(l.name)} · ${esc(l.season)} · ${l.teams||'?'} teams</option>`).join('')}</select><button class="btn" id="${el.id}b">Use this league</button></div>`:'<p class="mute">No leagues found for this season.</p>';
+    const b=$('#'+el.id+'b');if(b)b.onclick=async()=>{const s=$('#'+el.id+'s');ST=await api(ep,{id:s.value,name:s.selectedOptions[0].text.split(' · ')[0]});cache={};go(ep.includes('sleeper')?'nfl':'nhl')}};
+  $('#sgo').onclick=async e=>{e.target.disabled=true;try{const r=await api('/api/sleeper/connect',{username:$('#su').value});
+    const on=new Set(nflList().map(l=>l.id)), el=$('#sl');
+    el.innerHTML=r.leagues.length?`<p class="mute">Pick every league you want the app to follow:</p>${r.leagues.map(l=>`<label class="row" style="margin:4px 0"><input type="checkbox" value="${esc(l.id)}" data-n="${esc(l.name)}" ${!on.size||on.has(l.id)?'checked':''}> ${esc(l.name)} <span class="mute">· ${l.teams||'?'} teams</span></label>`).join('')}<div class="row"><button class="btn" id="slb">Use selected leagues</button></div>`:'<p class="mute">No leagues found for this season.</p>';
+    const b=$('#slb');if(b)b.onclick=async()=>{try{const ls=[...el.querySelectorAll('input:checked')].map(i=>({id:i.value,name:i.dataset.n}));ST=await api('/api/sleeper/leagues',{leagues:ls});cache={};go('nfl')}catch(x){err(x)}}}catch(x){err(x)}e.target.disabled=false};
+  $('#ycfg').onclick=async()=>{try{const r=await api('/api/yahoo/config',{client_id:$('#yid').value,client_secret:$('#ysec').value,redirect:$('#yred').value});
+    ST.yahoo_configured=true;showLink(r.auth_url)}catch(x){err(x)}};
+  const ya=$('#yauth');if(ya)ya.onclick=async()=>{try{const r=await api('/api/yahoo/auth_url');showLink(r.auth_url)}catch(x){err(x)}};
+  let ybusy=false;
+  let yused='';
+  const yconnect=async()=>{const v=$('#ycode').value.trim();if(!v||ybusy||v===yused)return;yused=v;ybusy=true;const btn=$('#ygo');btn.disabled=true;btn.textContent='Connecting…';$('#cerr').innerHTML='';
+    try{const r=await api('/api/yahoo/code',{code:v});ST.yahoo_connected=true;$('#ycode').value='';pick($('#yl'),r.leagues,'/api/yahoo/league')}
+    catch(x){$('#ycode').value='';err(/INVALID_AUTHORIZATION_CODE|expired/i.test(x.message)?new Error('That Yahoo code expired or was already used (codes last only a few minutes and work once). Click “Copy link” in step 3, approve again, and paste the new address here — it connects automatically.'):x)}
+    btn.disabled=false;btn.textContent='Connect';ybusy=false};
+  $('#ygo').onclick=yconnect;
+  $('#ycode').addEventListener('paste',()=>setTimeout(yconnect,50));
+  const yr=$('#yreload');if(yr)yr.onclick=async()=>{try{const r=await api('/api/yahoo/leagues');pick($('#yl'),r.leagues,'/api/yahoo/league')}catch(x){err(x)}};
+}
+
+/* ------------------------------------------------------------ dashboards */
+async function sport(sp,force){
+  if(!(sp==='nfl'?nflList().length:ST.yahoo_league)){app.innerHTML=`<div class="card"><p>Not connected yet.</p><button class="btn" onclick="go('connect')">Connect ${sp==='nfl'?'Sleeper':'Yahoo'}</button></div>`;return}
+  const ck=sp==='nfl'?'nfl:'+curNfl():sp;
+  if(!cache[ck]||force){app.innerHTML=`<div class="loading">Pulling rosters, projections and stats…<br><small>first load can take ~30s while history is cached</small></div>`;
+    try{cache[ck]=await api((sp==='nfl'?`/api/nfl/dashboard?league=${encodeURIComponent(curNfl())}`:'/api/nhl/dashboard?x=1')+(force?'&force=1':''))}catch(e){app.innerHTML=`<div class="err">${esc(e.message)}</div><button class="btn ghost" onclick="go('connect')">Connect settings</button>`;return}}
+  if(view!==sp||(sp==='nfl'&&ck!=='nfl:'+curNfl()))return;render(cache[ck])}
+
+function render(d){
+  const sp=d.sport, L=d.league, me=d.teams.find(t=>t.mine), srcs=Object.keys(d.weights);
+  const posKeys=d.teams.length?Object.keys(d.teams[0].positions):[];
+  $('#hdr').textContent=`${L.name} · week ${L.week}${L.window?' ('+L.window.join(' → ')+')':''}`;
+  const myGame=d.games.find(g=>g.mine);
+  let h=`<div class="grid">`;
+  // summary
+  h+=`<div class="card wide"><div class="stats">
+   <div><div class="mute">Your team</div><div class="big">${esc(me?me.name:'—')}</div><div class="mute">${esc(me?.record||'')}</div></div>
+   <div><div class="mute">This week</div><div class="big">${me?G(me.week.grade):'–'}</div><div class="mute">#${me?.week.rank||'–'} of ${d.teams.length}</div></div>
+   <div><div class="mute">Rest of season</div><div class="big">${me?G(me.ros.grade):'–'}</div><div class="mute">#${me?.ros.rank||'–'} of ${d.teams.length}</div></div>
+   ${myGame?`<div><div class="mute">Win chance this week</div><div class="big">${pct(myGame.a===me.name?myGame.a_win:1-myGame.a_win)}</div><div class="mute">vs ${esc(myGame.a===me.name?myGame.b:myGame.a)}</div></div>`:''}
+   <div style="flex:1;min-width:220px"><div class="mute">How much each tracker counts (learned)</div>
+    ${srcs.map(s=>`<div class="row" style="margin:3px 0"><span style="width:120px">${srcName(sp,s)}</span><div class="bar"><i style="width:${d.weights[s]*100}%"></i></div><span class="num" style="width:38px">${pct(d.weights[s])}</span></div>`).join('')}</div>
+   <div class="row" style="align-items:flex-start">${sp==='nfl'?lgSelect('lgsw',L.id):''}<button class="btn ghost" onclick="sport('${sp}',true)">↻ Refresh</button></div></div></div>`;
+  // power grades
+  h+=`<div class="card wide"><h2>League power grades <small>click a team to see its roster · ${sp==='nhl'&&!L.points?'right columns = category strength':'right columns = position strength'}</small></h2><div class="scroll"><table class="tbl">
+   <tr><th>#</th><th>Team</th><th>Rec</th><th>This wk</th><th>ROS</th>${srcs.map(s=>`<th title="Grade using only this tracker">${srcName(sp,s)}</th>`).join('')}${posKeys.map(p=>`<th>${esc(p)}</th>`).join('')}</tr>
+   ${d.teams.map((t,i)=>`<tr class="click ${t.mine?'mine':''}" data-i="${i}"><td>${t.ros.rank}</td><td><b>${esc(t.name)}</b></td><td>${esc(t.record||'')}</td>
+     <td>${G(t.week.grade)} <span class="mute">${f(t.week.value)}</span></td><td>${G(t.ros.grade)}</td>
+     ${srcs.map(s=>`<td>${G(t.trackers[s]?.grade)}</td>`).join('')}${posKeys.map(p=>`<td>${G(t.positions[p])}</td>`).join('')}</tr>
+     <tr class="roster" data-r="${i}" hidden><td colspan="${5+srcs.length+posKeys.length}" style="white-space:normal;padding:0 0 12px">${rosterTable(sp,t,srcs)}</td></tr>`).join('')}
+   </table></div></div>`;
+  // matchups
+  h+=`<div class="card"><h2>Matchups <small>${sp==='nhl'&&!L.points?'win % from category simulation':'projected points'}</small></h2>${d.games.map(g=>`
+   <div class="wp" ${g.mine?'style="font-weight:700"':''}><span class="t">${esc(g.a)} <span class="mute">${f(g.a_proj)}</span></span><div class="bar"><i style="width:${g.a_win*100}%"></i></div><span class="t"><span class="mute">${f(g.b_proj)}</span> ${esc(g.b)}</span></div>
+   <div class="mute" style="font-size:12px;text-align:center;margin-top:-6px">${pct(g.a_win)} – ${pct(1-g.a_win)}</div>
+   ${g.mine&&g.cats?`<div class="scroll"><table class="tbl" style="margin:6px 0 12px"><tr><th>Cat</th><th class="num">${esc(g.a)}</th><th class="num">${esc(g.b)}</th></tr>${g.cats.map(c=>`<tr><td>${esc(c.cat)}</td><td class="num">${f(c.a,c.cat.includes('%')?3:1)}</td><td class="num">${f(c.b,c.cat.includes('%')?3:1)}</td></tr>`).join('')}</table></div>`:''}`).join('')||'<p class="mute">No matchups this week.</p>'}</div>`;
+  // start/sit
+  h+=`<div class="card"><h2>${sp==='nfl'?'Start / sit':"Today's lineup check"}</h2><ul class="list">${d.advice.start_sit.map(a=>`<li>✅ ${esc(a.text)}</li>`).join('')||'<li class="mute">Your lineup already matches the best one. Nice.</li>'}</ul></div>`;
+  // waivers
+  h+=`<div class="card"><h2>Waiver targets <small>vs. your weakest player at that spot</small></h2><ul class="list">${d.advice.waivers.map(w=>`<li><b>${esc(w.add.name)}</b> <span class="chip">${esc((w.add.pos||[]).join('/'))}</span><span class="chip">${esc(w.add.team||'')}</span>${w.add.owned!=null?`<span class="chip">${Math.round(w.add.owned)}% rostered</span>`:''}
+     <div class="mute">${w.drop?'Drop '+esc(w.drop)+' · ':''}<span class="good">+${f(w.gain,2)}</span> ${sp==='nfl'?'pts/wk':'value/wk'} ROS${w.week_gain!=null?` · <span class="${w.week_gain>=0?'good':'bad'}">${w.week_gain>=0?'+':''}${f(w.week_gain,2)}</span> this week`:''}</div></li>`).join('')||'<li class="mute">No free agent beats your current guys right now.</li>'}</ul></div>`;
+  // trades
+  h+=`<div class="card"><h2>Win-win trade ideas <small>both lineups get better</small></h2><ul class="list">${d.trades.map(t=>`<li>Give <b>${esc(t.give.name)}</b> → get <b>${esc(t.get.name)}</b> <span class="mute">from ${esc(t.team)}</span>
+     <div class="mute">You <span class="good">+${f(t.you_gain,2)}</span> · They <span class="good">+${f(t.they_gain,2)}</span> (lineup value/wk)</div></li>`).join('')||'<li class="mute">No 1-for-1 deals that help both sides.</li>'}</ul></div>`;
+  if(d.trending&&d.trending.length)h+=`<div class="card"><h2>Trending adds on Sleeper <small>last 48h</small></h2><ul class="list">${d.trending.slice(0,15).map(t=>`<li>${esc(t.name)} <span class="chip">${esc(t.pos[0])}</span><span class="chip">${esc(t.team)}</span> <span class="mute">${(t.adds/1000).toFixed(0)}k adds</span> ${t.available?'<span class="chip good">available in your league</span>':''}</li>`).join('')}</ul></div>`;
+  h+=`</div>`;app.innerHTML=h;
+  const sw=$('#lgsw');if(sw)sw.onchange=()=>{setNfl(sw.value);sport('nfl')};
+  app.querySelectorAll('tr.click').forEach(r=>r.onclick=()=>{const x=app.querySelector(`tr[data-r="${r.dataset.i}"]`);x.hidden=!x.hidden});
+}
+function rosterTable(sp,t,srcs){
+  return `<table class="tbl" style="background:var(--bg)"><tr><th>Player</th><th>Pos</th><th>Tm</th><th>Slot</th>${srcs.map(s=>`<th class="num">${srcName(sp,s)}</th>`).join('')}<th class="num">Blend wk</th><th class="num">ROS/wk</th>${sp==='nhl'?'<th class="num">Gms left</th><th class="num">Own%</th>':''}</tr>
+  ${t.players.map(p=>`<tr><td>${esc(p.name)}${p.injury?` <span class="chip bad">${esc(p.injury)}</span>`:''}</td><td>${esc((p.pos||[]).join('/'))}</td><td>${esc(p.team)}</td>
+   <td>${p.reserve?'IR':p.slot?esc(p.slot):p.starter?'<b>Start</b>':'<span class="mute">Bench</span>'}</td>${srcs.map(s=>`<td class="num">${f(p.trackers?.[s])}</td>`).join('')}
+   <td class="num"><b>${f(p.value)}</b></td><td class="num">${f(p.ros)}</td>${sp==='nhl'?`<td class="num">${f(p.games_left)}</td><td class="num">${p.owned==null?'–':Math.round(p.owned)}</td>`:''}</tr>`).join('')}</table>`}
+
+/* --------------------------------------------------------------- feedback */
+async function feedback(run){
+  app.innerHTML=`<div class="row"><select id="fsp"><option value="nfl">🏈 Football (Sleeper)</option><option value="nhl">🏒 Hockey (Yahoo)</option></select>${fbSport==='nfl'?lgSelect('flg',curNfl()):''}
+   <button class="btn" id="frun">Run feedback update now</button><span class="mute">Also runs by itself in the background whenever you open a dashboard (every 6h).</span></div><div id="fbody" class="loading">Loading…</div>`;
+  $('#fsp').value=fbSport;$('#fsp').onchange=()=>{fbSport=$('#fsp').value;feedback()};
+  $('#frun').onclick=()=>feedback(true);const fl=$('#flg');if(fl)fl.onchange=()=>{setNfl(fl.value);feedback()};
+  if(run)$('#fbody').innerHTML='<div class="loading">Scoring every finished week against what actually happened…</div>';
+  const fq=fbSport==='nfl'?`?league=${encodeURIComponent(curNfl())}`:'';
+  let r;try{r=await api(`/api/${fbSport}/feedback${fq}`,run?{}:undefined)}catch(e){$('#fbody').innerHTML=`<div class="err">${esc(e.message)}</div>`;return}
+  const sp=fbSport, srcs=Object.keys(r.sources), weeks=[...new Set(r.source_scores.map(s=>s.week))];
+  const sc={};r.source_scores.forEach(s=>sc[s.week+'|'+s.source]=s.spearman);
+  const heat=v=>v==null?'<span class="heat mute">–</span>':`<span class="heat" style="background:rgba(47,111,237,${Math.max(0,v)*0.7});color:${v>0.45?'#fff':'inherit'}">${v.toFixed(2)}</span>`;
+  const A=r.advice_summary, M=r.matchups;
+  const effBy={};r.lineup_eff.forEach(e=>{(effBy[e.team_id]=effBy[e.team_id]||{name:e.team_name,lost:[],weeks:0});effBy[e.team_id].lost.push(e.optimal-e.actual)});
+  const eff=Object.entries(effBy).map(([id,e])=>({id,name:e.name,avg:e.lost.reduce((a,b)=>a+b,0)/e.lost.length,tot:e.lost.reduce((a,b)=>a+b,0),n:e.lost.length})).sort((a,b)=>a.avg-b.avg);
+  let h=`<div class="grid">
+  <div class="card wide"><h2>Loop 1 · Which trackers are actually right? <small>accuracy = rank correlation between a tracker's prediction and real results (1.0 = perfect order)</small></h2>
+   <div class="scroll"><table class="tbl"><tr><th>Tracker</th><th class="num">Weeks scored</th><th class="num">Recent accuracy</th><th class="num">Starting weight</th><th class="num">Learned weight</th><th></th></tr>
+   ${srcs.map(s=>{const x=r.sources[s];const dw=x.weight-x.prior;return `<tr><td><b>${srcName(sp,s)}</b></td><td class="num">${x.weeks_scored}</td><td class="num">${x.recent_accuracy==null?'<span class="mute">waiting for data</span>':x.recent_accuracy.toFixed(2)}</td><td class="num">${pct(x.prior)}</td><td class="num"><b>${pct(x.weight)}</b></td><td class="${dw>0.005?'good':dw<-0.005?'bad':'mute'}">${dw>0.005?'▲ trusting more':dw<-0.005?'▼ trusting less':'—'}</td></tr>`}).join('')}</table></div>
+   ${weeks.length?`<h2 style="margin-top:16px">Accuracy by week</h2><div class="scroll"><table class="tbl"><tr><th>Tracker</th>${weeks.map(w=>`<th class="num">Wk ${w}</th>`).join('')}</tr>${srcs.map(s=>`<tr><td>${srcName(sp,s)}</td>${weeks.map(w=>`<td class="num">${heat(sc[w+'|'+s])}</td>`).join('')}</tr>`).join('')}</table></div>`:'<p class="note">No finished weeks scored yet. Hit “Run feedback update now”.</p>'}
+   <p class="note">Snapshot-only trackers (${sp==='nfl'?'market value':'Yahoo % rostered'}) can't be rebuilt for past weeks, so they start being scored from the first week you open the app. ${sp==='nhl'?'Hockey values are your league categories normalized so an average player-game ≈ 1 per category.':''}</p></div>
+  <div class="card"><h2>Loop 2 · Are the win % calls honest?</h2>
+   <div class="stats"><div><div class="mute">Matchups scored</div><div class="big">${M.scored}</div></div>
+    <div><div class="mute">Picked the winner</div><div class="big">${pct(M.hit_rate)}</div></div>
+    <div><div class="mute">Brier score</div><div class="big ${M.brier!=null&&M.brier<0.25?'good':''}">${M.brier??'–'}</div><div class="mute">coin flip = 0.25, lower is better</div></div></div>
+   ${sp==='nhl'?'<p class="note">Hockey win % is logged live the first time you view a week, then scored when Yahoo posts the result.</p>':''}</div>
+  <div class="card"><h2>Loop 3 · Did the advice work?</h2>
+   <div class="stats"><div><div class="mute">Calls made</div><div class="big">${A.logged}</div></div><div><div class="mute">Resolved</div><div class="big">${A.resolved}</div></div>
+    <div><div class="mute">Hit rate</div><div class="big">${pct(A.hit_rate)}</div></div><div><div class="mute">Net ${sp==='nfl'?'pts':'value'}</div><div class="big ${A.net_points>0?'good':A.net_points<0?'bad':''}">${A.net_points??'–'}</div></div></div>
+   ${A.ignored_cost?`<p class="note">Advice you skipped that would have helped: <b class="bad">${A.ignored_cost}</b> ${sp==='nfl'?'points':'value'} left on the table.</p>`:''}</div>
+  ${eff.length?`<div class="card"><h2>Loop 4 · Lineup efficiency <small>points left on the bench, per week</small></h2><table class="tbl"><tr><th>#</th><th>Team</th><th class="num">Avg lost/wk</th><th class="num">Total lost</th></tr>
+   ${eff.map((e,i)=>`<tr class="${String(e.id)===String(r.my_team)?'mine':''}"><td>${i+1}</td><td>${esc(e.name)}</td><td class="num">${e.avg.toFixed(1)}</td><td class="num">${e.tot.toFixed(1)}</td></tr>`).join('')}</table></div>`:''}
+  <div class="card wide"><h2>Advice log <small>✓ = you followed it (detected automatically)</small></h2><div class="scroll"><table class="tbl"><tr><th>Wk</th><th>Call</th><th class="num">Expected edge</th><th>Followed</th><th class="num">Actual result</th></tr>
+   ${r.advice.slice(0,60).map(a=>`<tr><td>${a.week}</td><td>${esc(a.text)}</td><td class="num">${f(a.edge,2)}</td><td>${a.followed==null?'<span class="mute">pending</span>':a.followed?'✓':'✗'}</td><td class="num ${a.outcome>0?'good':a.outcome<0?'bad':''}">${a.outcome==null?'<span class="mute">pending</span>':(a.outcome>0?'+':'')+a.outcome}</td></tr>`).join('')||'<tr><td colspan="5" class="mute">No advice logged yet — open a dashboard to generate some.</td></tr>'}</table></div></div></div>`;
+  $('#fbody').innerHTML=h;$('#fbody').classList.remove('loading');
+}
+init().catch(e=>app.innerHTML=`<div class="err">${esc(e.message)}</div>`);
+</script>
+</body>
+</html>
